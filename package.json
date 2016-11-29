@@ -1,0 +1,23 @@
+{
+  "name": "menubot",
+  "version": "1.0.0",
+  "description": "menubot for slack",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HurSungYun/menubot.git"
+  },
+  "author": "ethanhur",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HurSungYun/menubot/issues"
+  },
+  "homepage": "https://github.com/HurSungYun/menubot#readme",
+  "dependencies": {
+    "slackbots": "^0.5.3",
+    "sqlite3": "^3.1.8"
+  }
+}
