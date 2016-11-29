@@ -130,24 +130,58 @@ MenuBot.prototype._replyAdd = function (message) {
     var substr = message.text.substring("menubot add ".length, message.text.length);
     var menuName = substr.split(" ")[0];
     var rate = substr.split(" ")[1];
-    console.log(menuName, rate);
-    //I might use db.get here
     self.db.get("INSERT INTO menus VALUES ('" + menuName + "', " + rate + ");", function (err, record) {
-        console.log(record); 
-        self.postMessageToChannel(channel.name, err, {as_user: true});
+        if(err)
+            self.postMessageToChannel(channel.name, err, {as_user: true});
+        else
+            self.postMessageToChannel(channel.name, "Menu is added successfully", {as_user: true});
     });
 };
 
 MenuBot.prototype._replyDelete = function (message) {
+    var self = this;
+    var channel = self._getChannelById(message.channel);
+
+    var substr = message.text.substring("menubot delete ".length, message.text.length);
+    self.db.get("DELETE FROM menus WHERE name = " + substr, function (err, record) {
+        if(err)
+            self.postMessageToChannel(channel.name, err, {as_user: true});
+        else
+            self.postMessageToChannel(channel.name, "Menu is deleted successfully", {as_user: true});
+    });
 };
 
 MenuBot.prototype._replyUpdate = function (message) {
+    var self = this;
+    var channel = self._getChannelById(message.channel);
+
+    var substr = message.text.substring("menubot update ".length, message.text.length);
+    self.db.get("UPDATE menus SET rate = " + substr, function (err, record) {
+        if(err)
+            self.postMessageToChannel(channel.name, err, {as_user: true});
+        else
+            self.postMessageToChannel(channel.name, "Menu is updated successfully", {as_user: true});
+    });
 };
 
 MenuBot.prototype._replyMenu = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
-    self.postMessageToChannel(channel.name, 'menu!', {as_user: true});
+    self.db.all("SELECT name, rate FROM menus", function (err, records) {
+        var min = 2147483647;
+        var min_idx;
+        for(let i = 0 ;i < records.length; i++) {
+            records[i].value = - Math.log(Math.random()) / records[i].rate;
+        }
+
+        for (let i = 0; i < records.length; i++) {
+            if( min > records[i].value) {
+                min = records[i].value;
+                min_idx = i;
+            }
+        }
+        self.postMessageToChannel(channel.name, records[min_idx].name, {as_user: true});
+    });
 };
 
 MenuBot.prototype._replyList = function (message) {
