@@ -9,8 +9,11 @@ You can add or delete menus with rate (affects picking-frequency), and pick what
 ```
 git clone https://github.com/HurSungYun/menubot
 
-BOT_API_KEY=<your_api_key> node index.js
+cd menubot
 
+npm install
+
+BOT_API_KEY=<your_api_key> node index.js
 ```
 
 You should get the api key to allow your bot to join slack channel before running MenuBot. 
