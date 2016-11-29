@@ -143,7 +143,7 @@ MenuBot.prototype._replyDelete = function (message) {
     var channel = self._getChannelById(message.channel);
 
     var substr = message.text.substring("menubot delete ".length, message.text.length);
-    self.db.get("DELETE FROM menus WHERE name = " + substr, function (err, record) {
+    self.db.get("DELETE FROM menus WHERE name = '" + substr + "'", function (err, record) {
         if(err)
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
@@ -156,7 +156,7 @@ MenuBot.prototype._replyUpdate = function (message) {
     var channel = self._getChannelById(message.channel);
 
     var substr = message.text.substring("menubot update ".length, message.text.length);
-    self.db.get("UPDATE menus SET rate = " + substr, function (err, record) {
+    self.db.get("UPDATE menus SET rate = '" + substr + "'", function (err, record) {
         if(err)
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
@@ -168,7 +168,7 @@ MenuBot.prototype._replyMenu = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
     self.db.all("SELECT name, rate FROM menus", function (err, records) {
-        var min = 2147483647;
+        var min = Number.MAX_VALUE;
         var min_idx;
         for(let i = 0 ;i < records.length; i++) {
             records[i].value = - Math.log(Math.random()) / records[i].rate;
@@ -206,11 +206,19 @@ MenuBot.prototype._replyList = function (message) {
 MenuBot.prototype._replyHelp = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
-    self.postMessageToChannel(channel.name, 'help!', {as_user: true});
+    var msg = "usage: menubot <command> [<args>]\n\n" +
+              "available menubot commands are:\n" +
+              "add <item> <rate>      Add item into menu lists\n" +
+              "delete <item>          Delete item from menu lists\n"+
+              "update <item> <rate>   Set new rate of item\n"+
+              "menu                   Pick Menu randomly among menu lists\n"+
+              "list                   Show menu lists\n"+
+              "help                   See the help document\n";
+
+    self.postMessageToChannel(channel.name, msg, {as_user: true});
 };
 
 
-	
 var token = process.env.BOT_API_KEY;
 var dbPath = process.env.BOT_DB_PATH;
 var name = process.env.BOT_NAME;
