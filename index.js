@@ -154,14 +154,14 @@ MenuBot.prototype._replyList = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
 
-    self.db.get('SELECT name, rate FROM menus ORDER BY rate DESC', function (err, records) {
+    self.db.all('SELECT name, rate FROM menus ORDER BY rate DESC', function (err, records) {
         if (err) {
             return console.error('DATABASE ERROR:', err);
         }
         var msg = "List of Menus:\n";
-        console.log(records);
 
-        for(let record in records) {
+        for(let i = 0 ;i < records.length; i++) {
+            var record = records[i];
             msg = msg.concat(record.name + ", rate: " + record.rate + "\n");
         }
 
