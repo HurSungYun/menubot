@@ -13,6 +13,8 @@ cd menubot
 
 npm install
 
+node data/dbGen.js
+
 BOT_API_KEY=<your_api_key> node index.js
 ```
 
