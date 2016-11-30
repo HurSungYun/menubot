@@ -83,8 +83,8 @@ MenuBot.prototype._isFromMenuBot = function (message) {
 };
 
 MenuBot.prototype._isMentioningMenuBot = function (message) {
-    return message.text.toLowerCase().indexOf('menubot') > -1 ||
-        message.text.toLowerCase().indexOf(this.name) > -1;
+    return message.text.toLowerCase().indexOf('menubot') == 0 ||
+        message.text.toLowerCase().indexOf(this.name) == 0;
 };
 
 MenuBot.prototype._isAddCmd = function (message) {
