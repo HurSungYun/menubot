@@ -156,7 +156,9 @@ MenuBot.prototype._replyUpdate = function (message) {
     var channel = self._getChannelById(message.channel);
 
     var substr = message.text.substring("menubot update ".length, message.text.length);
-    self.db.get("UPDATE menus SET rate = '" + substr + "'", function (err, record) {
+    var menuName = substr.split(" ")[0];
+    var rate = substr.split(" ")[1];
+    self.db.get("UPDATE menus SET rate = '" + rate + "' WHERE name = '" + menuName + "'", function (err, record) {
         if(err)
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
