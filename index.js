@@ -54,17 +54,19 @@ MenuBot.prototype._onMessage = function (message) {
 	if(this._isAddCmd(message)) {
 	    this._replyAdd(message);
 	} else if (this._isDeleteCmd(message)) {
-            this._replyDelete(message);
+        this._replyDelete(message);
 	} else if (this._isUpdateCmd(message)) {
-            this._replyUpdate(message);
-        } else if (this._isMenuCmd(message)) {
-            this._replyMenu(message);
+        this._replyUpdate(message);
+    } else if (this._isLunchCmd(message)) {
+        this._replyLunch(message);
 	} else if (this._isHelpCmd(message)) {
-            this._replyHelp(message);
-        } else if (this._isListCmd(message)) {
-            this._replyList(message);
-        } else {
-            this._replyErr(message);
+        this._replyHelp(message);
+    } else if (this._isListCmd(message)) {
+        this._replyList(message);
+    } else if (this._isDinnerCmd(message)) {
+        this._replyDinner(message);
+    } else {
+        this._replyErr(message);
         }
     }
 };
@@ -99,8 +101,12 @@ MenuBot.prototype._isUpdateCmd = function (message) {
     return message.text.toLowerCase().indexOf('menubot update') == 0;
 };
 
-MenuBot.prototype._isMenuCmd = function (message) {
-    return message.text.toLowerCase().indexOf('menubot menu') == 0;
+MenuBot.prototype._isLunchCmd = function (message) {
+    return message.text.toLowerCase().indexOf('menubot lunch') == 0;
+};
+
+MenuBot.prototype._isDinnerCmd = function (message) {
+    return message.text.toLowerCase().indexOf('menubot dinner') == 0;
 };
 
 MenuBot.prototype._isListCmd = function (message) {
@@ -129,12 +135,14 @@ MenuBot.prototype._replyAdd = function (message) {
 
     var substr = message.text.substring("menubot add ".length, message.text.length);
     var menuName = substr.split(" ")[0];
-    var rate = substr.split(" ")[1];
-    self.db.get("INSERT INTO menus VALUES ('" + menuName + "', " + rate + ");", function (err, record) {
+    var lunch_rate = substr.split(" ")[1];
+    var dinner_rate = substr.split(" ")[2];
+    if(!dinner_rate) dinner_rate = 0;
+    self.db.get("INSERT INTO menus VALUES ('" + menuName + "', " + lunch_rate + "," + dinner_rate + ");", function (err, record) {
         if(err)
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
-            self.postMessageToChannel(channel.name, "Menu is added successfully", {as_user: true});
+            self.postMessageToChannel(channel.name, "Menu has added successfully", {as_user: true});
     });
 };
 
@@ -147,7 +155,7 @@ MenuBot.prototype._replyDelete = function (message) {
         if(err)
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
-            self.postMessageToChannel(channel.name, "Menu is deleted successfully", {as_user: true});
+            self.postMessageToChannel(channel.name, "Menu has deleted successfully", {as_user: true});
     });
 };
 
@@ -157,23 +165,26 @@ MenuBot.prototype._replyUpdate = function (message) {
 
     var substr = message.text.substring("menubot update ".length, message.text.length);
     var menuName = substr.split(" ")[0];
-    var rate = substr.split(" ")[1];
-    self.db.get("UPDATE menus SET rate = '" + rate + "' WHERE name = '" + menuName + "'", function (err, record) {
+    var lunch_dinner = substr.split(" ")[1];
+    if(lunch_dinner != "lunch" && lunch_dinner != "dinner")
+        return self.postMessageToChannel(channel.name, "Wrong Parameters", {as_user: true});
+    var rate = substr.split(" ")[2];
+    self.db.get("UPDATE menus SET " + lunch_dinner + "_rate = '" + rate + "' WHERE name = '" + menuName + "'", function (err, record) {
         if(err)
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
-            self.postMessageToChannel(channel.name, "Menu is updated successfully", {as_user: true});
+            self.postMessageToChannel(channel.name, "Menu has updated successfully", {as_user: true});
     });
 };
 
-MenuBot.prototype._replyMenu = function (message) {
+MenuBot.prototype._replyLunch = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
-    self.db.all("SELECT name, rate FROM menus", function (err, records) {
+    self.db.all("SELECT name, lunch_rate FROM menus", function (err, records) {
         var min = Number.MAX_VALUE;
         var min_idx;
         for(let i = 0 ;i < records.length; i++) {
-            records[i].value = - Math.log(Math.random()) / records[i].rate;
+            records[i].value = - Math.log(Math.random()) / records[i].lunch_rate;
         }
 
         for (let i = 0; i < records.length; i++) {
@@ -182,15 +193,37 @@ MenuBot.prototype._replyMenu = function (message) {
                 min_idx = i;
             }
         }
-        self.postMessageToChannel(channel.name, records[min_idx].name, {as_user: true});
+        self.postMessageToChannel(channel.name, "Today's Lunch is " + records[min_idx].name, {as_user: true});
     });
+};
+
+MenuBot.prototype._replyDinner = function (message) {
+    var self = this;
+    var channel = self._getChannelById(message.channel);
+    self.db.all("SELECT name, dinner_rate FROM menus", function (err, records) {
+        var min = Number.MAX_VALUE;
+        var min_idx;
+         for(let i = 0 ;i < records.length; i++) {
+             records[i].value = - Math.log(Math.random()) / records[i].dinner_rate;
+         }
+
+         for (let i = 0; i < records.length; i++) {
+             if( min > records[i].value) {
+                 min = records[i].value;
+                 min_idx = i;
+             }
+         }
+
+         self.postMessageToChannel(channel.name, "Today's Dinner is " + records[min_idx].name, {as_user: true});
+    });
+
 };
 
 MenuBot.prototype._replyList = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
 
-    self.db.all('SELECT name, rate FROM menus ORDER BY rate DESC', function (err, records) {
+    self.db.all('SELECT name, lunch_rate, dinner_rate FROM menus ORDER BY lunch_rate DESC', function (err, records) {
         if (err) {
             return console.error('DATABASE ERROR:', err);
         }
@@ -198,7 +231,7 @@ MenuBot.prototype._replyList = function (message) {
 
         for(let i = 0 ;i < records.length; i++) {
             var record = records[i];
-            msg = msg.concat(record.name + ", rate: " + record.rate + "\n");
+            msg = msg.concat(record.name + ", lunch_rate: " + record.lunch_rate + ", dinner_rate: " + record.dinner_rate + "\n");
         }
 
         self.postMessageToChannel(channel.name, msg, {as_user: true});
@@ -210,12 +243,13 @@ MenuBot.prototype._replyHelp = function (message) {
     var channel = self._getChannelById(message.channel);
     var msg = "usage: menubot <command> [<args>]\n\n" +
               "available menubot commands are:\n" +
-              "add <item> <rate>      Add item into menu lists\n" +
-              "delete <item>          Delete item from menu lists\n"+
-              "update <item> <rate>   Set new rate of item\n"+
-              "menu                   Pick Menu randomly among menu lists\n"+
-              "list                   Show menu lists\n"+
-              "help                   See the help document\n";
+              "add <item> <lunch_rate> [dinner_rate]   Add item into menu lists\n" +
+              "delete <item>                           Delete item from menu lists\n"+
+              "update <item> <lunch or dinner> [rate]  Set new rate of item\n"+
+              "lunch                                   Pick Lunch randomly among menu lists\n"+
+              "dinner                                  Pick Dinner randomly among menu lists\n"+
+              "list                                    Show menu lists\n"+
+              "help                                    See the help document\n";
 
     self.postMessageToChannel(channel.name, msg, {as_user: true});
 };

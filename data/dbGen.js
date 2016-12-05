@@ -20,6 +20,6 @@ var outputFile = process.argv[2] || path.resolve(__dirname, 'menubot.db');
 var db = new sqlite3.Database(outputFile);
 
 db.serialize();
-db.run('CREATE TABLE IF NOT EXISTS menus (name TEXT PRIMARY KEY, rate INT DEFAULT 100)');
+db.run('CREATE TABLE IF NOT EXISTS menus (name TEXT PRIMARY KEY, lunch_rate INT DEFAULT 100, dinner_rate INT DEFAULT 100)');
 db.close();
 console.log('DB generated\n');
