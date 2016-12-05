@@ -251,10 +251,10 @@ MenuBot.prototype._replyHelp = function (message) {
               "available menubot commands are:\n" +
               "add <item> <lunch_rate> [dinner_rate]   Add item into menu lists\n" +
               "delete <item>                           Delete item from menu lists\n"+
-              "update <item> <lunch or dinner> [rate]  Set new rate of item\n"+
+              "update <item> <lunch or dinner> <rate>  Set new rate of item\n"+
               "lunch                                   Pick Lunch randomly among menu lists\n"+
               "dinner                                  Pick Dinner randomly among menu lists\n"+
-              "list                                    Show menu lists\n"+
+              "list [dinner]                           Show menu lists\n"+
               "help                                    See the help document\n";
 
     self.postMessageToChannel(channel.name, msg, {as_user: true});
