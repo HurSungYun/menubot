@@ -223,7 +223,13 @@ MenuBot.prototype._replyList = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
 
-    self.db.all('SELECT name, lunch_rate, dinner_rate FROM menus ORDER BY lunch_rate DESC', function (err, records) {
+     var substr = message.text.substring("menubot list".length, message.text.length);
+     var orderByDinner = substr.split(" ")[1];
+     var order = "lunch_rate";
+     if(orderByDinner == "dinner") order = "dinner_rate"
+
+
+    self.db.all('SELECT name, lunch_rate, dinner_rate FROM menus ORDER BY ' + order + ' DESC', function (err, records) {
         if (err) {
             return console.error('DATABASE ERROR:', err);
         }
