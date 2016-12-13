@@ -65,6 +65,8 @@ MenuBot.prototype._onMessage = function (message) {
         this._replyList(message);
     } else if (this._isDinnerCmd(message)) {
         this._replyDinner(message);
+    } else if (this._isRenameCmd(message)) {
+        this._replyRename(message);
     } else {
         this._replyErr(message);
         }
@@ -117,6 +119,10 @@ MenuBot.prototype._isHelpCmd = function (message) {
     return message.text.toLowerCase().indexOf('menubot help') == 0;
 };
 
+MenuBot.prototype._isRenameCmd = function (message) {
+    return message.text.toLowerCase().indexOf('menubot rename') == 0;
+};
+
 MenuBot.prototype._replyErr = function (message) {
     var self = this;
     var channel = self._getChannelById(message.channel);
@@ -143,6 +149,29 @@ MenuBot.prototype._replyAdd = function (message) {
             self.postMessageToChannel(channel.name, err, {as_user: true});
         else
             self.postMessageToChannel(channel.name, "Menu has added successfully", {as_user: true});
+    });
+};
+
+MenuBot.prototype._replyRename = function (message) {
+    var self = this;
+    var channel = self._getChannelById(message.channel);
+
+    var substr = message.text.substring("menubot rename ".length, message.text.length);
+    var oldName = substr.split(" ")[0];
+    var newName = substr.split(" ")[1];
+
+    self.db.get("INSERT INTO menus (name, lunch_rate, dinner_rate)" +
+      " SELECT '" + newName + "' AS name, lunch_rate, dinner_rate FROM menus WHERE name = '" + oldName + "'", function (err, record) { 
+        if(err)
+            return self.postMessageToChannel(channel.name, err, {as_user: true});
+
+        self.db.get("DELETE FROM menus WHERE name = '" + oldName + "'", function (err, record) {
+            if (err) {
+                self.postMessageToChannel(channel.name, err, {as_user: true});
+            } else {
+                self.postMessageToChannel(channel.name, "Menu has renamed successfully", {as_user: true});
+            }
+        });
     });
 };
 
