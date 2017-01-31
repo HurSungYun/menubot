@@ -6,6 +6,11 @@ var fs = require('fs');
 var SQLite = require('sqlite3').verbose();
 var Bot = require('slackbots');
 
+var token = process.env.BOT_API_KEY;
+var dbPath = process.env.BOT_DB_PATH;
+var name = process.env.BOT_NAME;
+
+
 var MenuBot = function Constructor(settings) {
     this.settings = settings;
     this.settings.name = this.settings.name || 'MenuBot';
@@ -25,6 +30,7 @@ MenuBot.prototype.run = function() {
 };
 
 MenuBot.prototype._onStart = function () {
+    console.log('MenuBot is started!');
 	this._loadBotUser();
 	this._connectDb();
 };
@@ -289,15 +295,14 @@ MenuBot.prototype._replyHelp = function (message) {
     self.postMessageToChannel(channel.name, msg, {as_user: true});
 };
 
+function createMenubot() {
+        var menubot = new MenuBot({
+            token: token,
+            dbPath: dbPath,
+            name: name
+        });
+        menubot.on('close', createMenubot);
+        menubot.run();
+}
 
-var token = process.env.BOT_API_KEY;
-var dbPath = process.env.BOT_DB_PATH;
-var name = process.env.BOT_NAME;
-
-var menubot = new MenuBot({
-    token: token,
-    dbPath: dbPath,
-    name: name
-});
-
-menubot.run();
+createMenubot();
